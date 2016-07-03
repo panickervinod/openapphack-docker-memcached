@@ -1,0 +1,15 @@
+machine:
+  services:
+    - docker
+dependencies:
+  cache_directories:
+    - "~/openapphack-docker-memcached"
+  override:
+    - docker info
+    - if [[ -e ~//openapphack-docker-memcached/image.tar ]]; then docker load --input ~/openapphack-docker-memcached/image.tar; fi
+    - docker build -t openapphack/memcached .
+    - mkdir -p ~/openapphack-docker-memcached; docker save --output ~/openapphack-docker-memcached/image.tar openapphack/memcached
+test:
+  override:
+    - docker run -d -p 21211:11211 openapphack/memcached; sleep 10
+    - (echo -e 'stats\nquit'; sleep 1) | nc 127.0.0.1 21211
